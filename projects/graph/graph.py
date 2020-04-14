@@ -1,7 +1,7 @@
 """
 Simple graph implementation
 """
-import dll_queue, dll_stack  # These may come in handy
+from util import Queue, Stack  # These may come in handy
 
 class Graph:
 
@@ -19,10 +19,7 @@ class Graph:
         """
         Add a directed edge to the graph.
         """
-        if v1 in self.vertices and v2 in self.vertices:
-            self.vertiecs[v1].add(v2)
-        else:
-            print("ERROR: Vertex,", v1, ",is not found")
+        self.vertices[v1].add(v2)
 
     def get_neighbors(self, vertex_id):
         """
@@ -44,17 +41,17 @@ class Graph:
         #dequeue FIFO, then look at all its edges.
         #put those edges into the FIFO queue.
         #then look at the FIFO's edges
-        InQueue = set()#
-        FirstInFirstOut = Queue()#
-        FirstInFirstOut.enqueue(starting_vertex)
-        InQueue.add(starting_vertex)
-        while FirstInFirstOut.size() >0:
-            currentFIFO = FirstInFirstOut.dequeue()
-            currentVertices = self.vertices(currentFIFO)
-            for FIFOsEdges in currentVertices:
-                if FIFOsEdges not in InQueue: #maybe i can use queue directly?
-                    FirstInFirstOut.enqueue(FIFOsEdges)
-                    InQueue.add(FIFOsEdges)
+        check = set() # Keep track of already used vertices
+        FIFOque = Queue() # Make a Queue
+        FIFOque.enqueue(starting_vertex)
+        check.add(starting_vertex)
+        while FIFOque.size() > 0:
+            node_index = FIFOque.dequeue() # Get current node
+            print(node_index)
+            for edge in self.vertices[node_index]:  # Go through all unused neighbors
+                if edge not in check:
+                    FIFOque.enqueue(edge) # Enqueue vertex
+                    check.add(edge)
 
     def dft(self, starting_vertex):
         """
@@ -71,27 +68,55 @@ class Graph:
         upkeep.add(starting_vertex)
         while FirstInLastOut.size() > 0:
             LookAtThisNode = FirstInLastOut.pop()
-            workingOnThisVertex = self.vertices[LookAtThisNode]
-            for oneEdge in workingOnThisVertex:
+            print(LookAtThisNode)
+            for oneEdge in self.vertices[LookAtThisNode]:
                 if oneEdge not in upkeep:
-                    FirstInLastOut(oneEdge)
+                    FirstInLastOut.push(oneEdge)
                     upkeep.add(oneEdge)
-    def dft_recursive(self, starting_vertex):
+    def dft_recursive(self, starting_vertex, UntilStackIsEmpty=None):
         """
         Print each vertex in depth-first order
         beginning from starting_vertex.
 
         This should be done using recursion.
         """
-        pass  # TODO
+        #start with a node, and EmptyStack
+        if UntilStackIsEmpty == None:
+            UntilStackIsEmpty = set()
+            UntilStackIsEmpty.add(starting_vertex)
+        lookAtThisNode = self.vertices[starting_vertex]
+        print(starting_vertex)
+        for edges in lookAtThisNode:
+            if edges not in UntilStackIsEmpty:
+                UntilStackIsEmpty.add(edges)
+                self.dft_recursive(edges,UntilStackIsEmpty)
 
-    def bfs(self, starting_vertex, destination_vertex):
+    def bfs(self, starting_vertex, destination_vertex ):
         """
         Return a list containing the shortest path from
         starting_vertex to destination_vertex in
         breath-first order.
         """
-        pass  # TODO
+        # make a Check to not duplicate serached, and FIFO queue, put in starting_vertex into both
+        check = set()
+        FIFO = Queue()
+        FIFO.enqueue((starting_vertex, []))
+        check.add(starting_vertex)
+        #start with a vertex's index, create a pathing, then start pushing edges into the FIFO queue.
+        #return when vertexIndex == destination_vertex
+        while FIFO.size()>0:
+            ThisVertex=FIFO.dequeue()
+            VertexIndex = ThisVertex[0]
+            VertexPathing = ThisVertex[1].copy() # return the pathing variable
+            VertexPathing.append(VertexIndex) # append to pathing variable
+            if VertexIndex == destination_vertex:
+                return VertexPathing
+            for edge in self.vertices[VertexIndex]:
+                if edge not in check:
+                    FIFO.enqueue((edge, VertexPathing))
+                    check.add((edge))
+        return None
+
 
     def dfs(self, starting_vertex, destination_vertex):
         """
@@ -99,9 +124,25 @@ class Graph:
         starting_vertex to destination_vertex in
         depth-first order.
         """
-        pass  # TODO
+        #
+        upkeep = set() # Keep track of already used vertices with list of path travelled
+        FIFOStack = Stack() # Make a Stack
+        FIFOStack.push((starting_vertex, [])) # Push starting vertex
+        upkeep.add(starting_vertex)
+        while FIFOStack.size() > 0:
+            Vertex = FIFOStack.pop() # Get current node
+            Vertex_index = Vertex[0]
+            pathing = Vertex[1].copy()
+            pathing.append(Vertex_index) # Add current vertex to path
+            if Vertex_index == destination_vertex: # Return if at destination
+                return pathing
+            for edge in self.vertices[Vertex_index]:  # Go through all unused neighbors
+                if edge not in upkeep:
+                    FIFOStack.push((edge, pathing)) # Push vertex with list of path travelled
+                    upkeep.add(edge)
+        return None
 
-    def dfs_recursive(self, starting_vertex, destination_vertex):
+    def dfs_recursive(self, starting_vertex, destination_vertex, startingPath=[], check=None):
         """
         Return a list containing a path from
         starting_vertex to destination_vertex in
@@ -109,7 +150,21 @@ class Graph:
 
         This should be done using recursion.
         """
-        pass  # TODO
+        #create VectexPath,
+        if check == None: # Make new used set if not one (initial call)
+            check = set()
+            check.add(starting_vertex)
+        Vertex_path = startingPath.copy()
+        Vertex_path.append(starting_vertex) # Add current vertex to path
+        if starting_vertex == destination_vertex: # Return if starting=destination
+            return Vertex_path
+        for edge in self.vertices[starting_vertex]:  # Go thought one of the edge
+            if edge not in check:
+                check.add(edge)
+                node_path = self.dfs_recursive(edge, destination_vertex, node_path, check) # Pass through used set
+                if node_path[-1] == destination_vertex: # Return list if found the solution
+                    return node_path
+        return startingPath # Default returning original list
 
 if __name__ == '__main__':
     graph = Graph()  # Instantiate your graph
