@@ -1,7 +1,7 @@
 """
 Simple graph implementation
 """
-from util import Stack, Queue  # These may come in handy
+import dll_queue, dll_stack  # These may come in handy
 
 class Graph:
 
@@ -13,34 +13,69 @@ class Graph:
         """
         Add a vertex to the graph.
         """
-        pass  # TODO
+        self.vertices[vertex_id] = set()
 
     def add_edge(self, v1, v2):
         """
         Add a directed edge to the graph.
         """
-        pass  # TODO
+        if v1 in self.vertices and v2 in self.vertices:
+            self.vertiecs[v1].add(v2)
+        else:
+            print("ERROR: Vertex,", v1, ",is not found")
 
     def get_neighbors(self, vertex_id):
         """
         Get all neighbors (edges) of a vertex.
         """
-        pass  # TODO
+        #use python dictionary at vertex_id, then add the edge to neightbors.
+        neightbors=set() #same as {}
+        for edge in self.vertices[vertex_id]:
+            neightbors.add(edge)
+        return neightbors
 
     def bft(self, starting_vertex):
         """
         Print each vertex in breadth-first order
         beginning from starting_vertex.
         """
-        pass  # TODO
+        #Start a que FIFO,
+        #use the queue stack to make while loop.
+        #dequeue FIFO, then look at all its edges.
+        #put those edges into the FIFO queue.
+        #then look at the FIFO's edges
+        InQueue = set()#
+        FirstInFirstOut = Queue()#
+        FirstInFirstOut.enqueue(starting_vertex)
+        InQueue.add(starting_vertex)
+        while FirstInFirstOut.size() >0:
+            currentFIFO = FirstInFirstOut.dequeue()
+            currentVertices = self.vertices(currentFIFO)
+            for FIFOsEdges in currentVertices:
+                if FIFOsEdges not in InQueue: #maybe i can use queue directly?
+                    FirstInFirstOut.enqueue(FIFOsEdges)
+                    InQueue.add(FIFOsEdges)
 
     def dft(self, starting_vertex):
         """
         Print each vertex in depth-first order
         beginning from starting_vertex.
         """
-        pass  # TODO
-
+        #push starting_vertex into stack.
+        #look at ONE edge from starting_vertex.
+        #push that one edge into stack, then look at its edge.
+        #continue this pattern, avoid looking up edges that are connected.
+        upkeep = set()
+        FirstInLastOut = Stack()
+        FirstInLastOut.push(starting_vertex)
+        upkeep.add(starting_vertex)
+        while FirstInLastOut.size() > 0:
+            LookAtThisNode = FirstInLastOut.pop()
+            workingOnThisVertex = self.vertices[LookAtThisNode]
+            for oneEdge in workingOnThisVertex:
+                if oneEdge not in upkeep:
+                    FirstInLastOut(oneEdge)
+                    upkeep.add(oneEdge)
     def dft_recursive(self, starting_vertex):
         """
         Print each vertex in depth-first order
