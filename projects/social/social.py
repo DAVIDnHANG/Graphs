@@ -1,3 +1,4 @@
+import random
 class User:
     def __init__(self, name):
         self.name = name
@@ -45,22 +46,44 @@ class SocialGraph:
         # !!!! IMPLEMENT ME
 
         # Add users
+        for i in range(0, num_users):
+            self.add_user(f"Person {i+1}")
+        # make possible_friendship list, add (user_id, friendship) to it, then randomize the order of possible_friendshipo, finally add friendship=possiblefriendship to add_friendship() method
+        possible_friendship=[]
+        for user_id in self.users:
+            for friend_id in range(user_id+1, self.last_id):
+                possible_friendship.append((user_id, friend_id))
+        random.Shuffle(possible_friendship)
+        for i in range(num_users*avg_friendships//2):
+            friendship=possible_friendship[i]
+            self.add_friendship(friendship[0],friendship[1])
 
-        # Create friendships
+
 
     def get_all_social_paths(self, user_id):
         """
         Takes a user's user_id as an argument
-
         Returns a dictionary containing every user in that user's
         extended network with the shortest friendship path between them.
-
         The key is the friend's ID and the value is the path.
         """
-        visited = {}  # Note that this is a dictionary, not a set
-        # !!!! IMPLEMENT ME
+        #friendships has all the friends.
+        #push friends into a list, such that this list is used to queue recommanded friend for this user.
+        #seperated
+        visited = {}
+        queue = []
+        queue.append([user_id])
+        while len(queue)>0:
+            path = queue.pop()
+            user = path[-1]
+            if user not in visited:
+                visited[user]=path
+                for friend in self.friendships[user]:
+                    new_path = path.copy()
+                    new_path.append(friend)
+                    if friend not in visited:
+                        queue.append(new_path)
         return visited
-
 
 if __name__ == '__main__':
     sg = SocialGraph()
